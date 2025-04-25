@@ -1,5 +1,8 @@
 # Web Application PIN Cracker Challenge
 
+## Video Demonstration
+[Watch the demonstration video](https://drive.google.com/file/d/15RDqIej4FregEaDXMbRr2dsO1fow2x_7/view?usp=sharing)
+
 ## Challenge Description
 This challenge involves creating a Python script to crack a 3-digit PIN protection system on a web server. The script successfully found the correct PIN and gained access to the protected content.
 
@@ -52,7 +55,6 @@ This challenge involves creating a Python script to crack a 3-digit PIN protecti
 ## Files Used
 - `ctf1_for_x64.exe` - The challenge server
 - `pin_brute.py` - The Python solution script
-- `server.rar` - Original server package
 
 ## Technical Details
 The solution script implements:
